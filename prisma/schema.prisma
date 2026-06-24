@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model LearnerSession {
+  id              String    @id @default(cuid())
+  userId          String
+  userName        String
+  userEmail       String
+  orgId           String
+  organizationName String
+  institutionId   String
+  institutionName String
+  stationId       String
+  courseId        String
+  timeZone        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  attempts        ActivityAttempt[]
+
+  @@unique([userId, stationId, courseId])
+}
+
+model ActivityAttempt {
+  id                String   @id @default(cuid())
+  requestId         String   @unique
+  launchId          String
+  eventType         String
+  activityId        String
+  activityCompleted Boolean  @default(false)
+  activityScore     Float    @default(0)
+  activityElapsed   Int      @default(0)
+  activityFailures  Int      @default(0)
+  sessionOutcome    String?
+  debriefings       String[]
+  rawPayload        Json
+  timestamp         DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  sessionId         String
+  session           LearnerSession @relation(fields: [sessionId], references: [id])
+}
