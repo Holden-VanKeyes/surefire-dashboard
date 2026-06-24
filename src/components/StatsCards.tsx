@@ -1,21 +1,13 @@
-'use client'
+"use client";
 
-import { Group, Paper, SimpleGrid, Text } from '@mantine/core'
-import { Attempt } from '@/types/attempt'
+import { Group, Paper, SimpleGrid, Text } from "@mantine/core";
+import { LearnerAttemptSummary } from "@/types/attempt";
 
 interface StatsCardsProps {
-  attempts: Attempt[]
+  attempts: LearnerAttemptSummary[];
 }
 
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: string | number
-  color?: string
-}) {
+function StatCard({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <Paper withBorder p="md" radius="md">
       <Text size="xs" c="dimmed" fw={700} tt="uppercase">
@@ -27,35 +19,24 @@ function StatCard({
         </Text>
       </Group>
     </Paper>
-  )
+  );
 }
 
 export function StatsCards({ attempts }: StatsCardsProps) {
-  const activeSessions = attempts.filter(
-    (a) => a.status === 'in_progress',
-  ).length
-  const criticalAlerts = attempts.filter(
-    (a) => a.criticality === 'critical',
-  ).length
+  const totalLearners = attempts.length;
+  const strugglingLearners = attempts.filter((a) => a.isStruggling).length;
+  const totalAttempts = attempts.reduce((sum, a) => sum + a.totalAttempts, 0);
   const averageFailureCount =
     attempts.length === 0
       ? 0
-      : attempts.reduce((sum, a) => sum + a.failureCount, 0) / attempts.length
-  const sessionsAtRisk = attempts.filter((a) => a.failureCount >= 3).length
+      : attempts.reduce((sum, a) => sum + a.failureCount, 0) / attempts.length;
 
   return (
     <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} px="lg" py="md">
-      <StatCard label="Active Sessions" value={activeSessions} />
-      <StatCard label="Critical Alerts" value={criticalAlerts} color="red" />
-      <StatCard
-        label="Avg Failure Count"
-        value={averageFailureCount.toFixed(1)}
-      />
-      <StatCard
-        label="Sessions At Risk"
-        value={sessionsAtRisk}
-        color="orange"
-      />
+      <StatCard label="Total Learners" value={totalLearners} />
+      <StatCard label="Struggling Learners" value={strugglingLearners} color="red" />
+      <StatCard label="Total Attempts" value={totalAttempts} />
+      <StatCard label="Avg Failure Count" value={averageFailureCount.toFixed(1)} color="orange" />
     </SimpleGrid>
-  )
+  );
 }

@@ -1,15 +1,15 @@
-import { mockAttempts } from '@/lib/mock-data'
-import { sortAttempts } from '@/lib/attempt-utils'
-import { Dashboard } from '@/components/Dashboard'
-import { Container } from '@mantine/core'
+import { Container } from "@mantine/core";
+import { GET } from "@/app/api/attempts/route";
+import { Dashboard } from "@/components/Dashboard";
+import { LearnerAttemptSummary } from "@/types/attempt";
 
-export default function Home() {
-  // TODO: swap mock data for real DB call once Postgres is live.
-  const initialAttempts = sortAttempts(mockAttempts)
+export default async function Home() {
+  const res = await GET();
+  const { attempts } = (await res.json()) as { attempts: LearnerAttemptSummary[] };
 
   return (
     <Container size="xl">
-      <Dashboard initialAttempts={initialAttempts} />
+      <Dashboard initialAttempts={attempts} />
     </Container>
-  )
+  );
 }

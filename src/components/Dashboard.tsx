@@ -1,16 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Center,
-  Stack,
-  Text,
-  Container,
-  Group,
-  SimpleGrid,
-} from '@mantine/core'
-import { Attempt, CriticalityLevel, StageType } from '@/types/attempt'
-import { sortAttempts } from '@/lib/attempt-utils'
+import { Center, SimpleGrid, Text } from '@mantine/core'
+import { LearnerAttemptSummary } from '@/types/attempt'
 import { DashboardHeader } from '@/components/DashboardHeader'
 import { StatsCards } from '@/components/StatsCards'
 import { FilterBar } from '@/components/FilterBar'
@@ -19,26 +11,23 @@ import { AttemptCard } from '@/components/AttemptCard'
 const POLL_INTERVAL_MS = 30_000
 
 interface DashboardProps {
-  initialAttempts: Attempt[]
+  initialAttempts: LearnerAttemptSummary[]
 }
 
 export function Dashboard({ initialAttempts }: DashboardProps) {
-  const [attempts, setAttempts] = useState<Attempt[]>(initialAttempts)
+  const [attempts, setAttempts] =
+    useState<LearnerAttemptSummary[]>(initialAttempts)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [criticalityFilter, setCriticalityFilter] = useState<
-    CriticalityLevel | 'all'
-  >('all')
-  const [stageFilter, setStageFilter] = useState<StageType | 'all'>('all')
+  const [filter, setFilter] = useState<'all' | 'struggling' | 'critical'>('all')
   const [search, setSearch] = useState('')
 
   const fetchAttempts = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      // TODO: swap mock data for real DB call once GET /api/attempts reads from Postgres.
       const res = await fetch('/api/attempts')
-      const data: { attempts: Attempt[] } = await res.json()
-      setAttempts(sortAttempts(data.attempts))
+      const data: { attempts: LearnerAttemptSummary[] } = await res.json()
+      setAttempts(data.attempts)
       setLastUpdated(new Date())
     } finally {
       setIsRefreshing(false)
@@ -56,21 +45,17 @@ export function Dashboard({ initialAttempts }: DashboardProps) {
   const filteredAttempts = useMemo(() => {
     const searchLower = search.trim().toLowerCase()
     return attempts.filter((attempt) => {
+      if (filter === 'critical' && !attempt.isCritical) return false
       if (
-        criticalityFilter !== 'all' &&
-        attempt.criticality !== criticalityFilter
+        filter === 'struggling' &&
+        (!attempt.isStruggling || attempt.isCritical)
       )
         return false
-      if (stageFilter !== 'all' && attempt.currentStage !== stageFilter)
-        return false
-      if (
-        searchLower &&
-        !attempt.participantName.toLowerCase().includes(searchLower)
-      )
+      if (searchLower && !attempt.userName.toLowerCase().includes(searchLower))
         return false
       return true
     })
-  }, [attempts, criticalityFilter, stageFilter, search])
+  }, [attempts, filter, search])
 
   return (
     <>
@@ -81,10 +66,8 @@ export function Dashboard({ initialAttempts }: DashboardProps) {
       />
       <StatsCards attempts={attempts} />
       <FilterBar
-        criticalityFilter={criticalityFilter}
-        onCriticalityFilterChange={setCriticalityFilter}
-        stageFilter={stageFilter}
-        onStageFilterChange={setStageFilter}
+        filter={filter}
+        onFilterChange={setFilter}
         search={search}
         onSearchChange={setSearch}
       />

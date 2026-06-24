@@ -61,3 +61,50 @@ export function formatTimeElapsed(startedAt: string, now: Date = new Date()): st
   const remainingMinutes = minutes % 60;
   return `${hours}h ${remainingMinutes}m`;
 }
+
+const ACTIVITY_LABELS: Record<string, string> = {
+  "skills-web-adult-compressions": "Adult Compressions",
+  "skills-web-adult-ventilations": "Adult Ventilations",
+  "skills-web-adult-2CPR-30-2": "Adult 2-Person CPR",
+  "skills-web-infant-compressions": "Infant Compressions",
+  "skills-web-infant-ventilations": "Infant Ventilations",
+  "skills-web-infant-2CPR-15-2": "Infant 2-Person CPR",
+  "hc-overview": "Course Overview",
+};
+
+function capitalizeFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function getActivityLabel(activityId: string): string {
+  return ACTIVITY_LABELS[activityId] ?? capitalizeFirst(activityId.replace(/-/g, " "));
+}
+
+const DEBRIEFING_LABELS: Record<string, string> = {
+  "improvement-need-hand-position": "Hand position needs improvement",
+  "improvement-need-depth": "Compression depth needs improvement",
+  "improvement-need-compression-rate": "Compression rate needs improvement",
+  "tip-comp-hand-position": "Check hand placement",
+  "tip-comp-depth-shallow": "Compressions too shallow",
+  "tip-comp-rate-low": "Compression rate too low",
+};
+
+export function getDebriefingLabel(code: string): string {
+  if (DEBRIEFING_LABELS[code]) return DEBRIEFING_LABELS[code];
+  const withoutPrefix = code.replace(/^(improvement|tip)-/, "");
+  return capitalizeFirst(withoutPrefix.replace(/-/g, " "));
+}
+
+export function formatRelativeTime(isoTimestamp: string, now: Date = new Date()): string {
+  const elapsedMs = Math.max(0, now.getTime() - new Date(isoTimestamp).getTime());
+  const minutes = Math.floor(elapsedMs / 60_000);
+
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
