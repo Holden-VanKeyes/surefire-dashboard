@@ -59,4 +59,13 @@ export interface LearnerAttemptSummary {
   passingScore: boolean | null
   isStruggling: boolean
   isCritical: boolean
+  recentAttempts: RecentAttempt[]
+}
+
+export interface RecentAttempt {
+  activityId: string
+  activityCompleted: boolean
+  /** ISO 8601 timestamp */
+  timestamp: string
+  activityFailures: number
 }

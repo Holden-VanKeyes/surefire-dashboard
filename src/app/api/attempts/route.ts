@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+interface RecentAttempt {
+  activityId: string
+  activityCompleted: boolean
+  timestamp: Date
+  activityFailures: number
+}
+
 interface LearnerAttemptSummary {
   id: string
   userId: string
@@ -19,6 +26,8 @@ interface LearnerAttemptSummary {
   scoreThreshold: number
   passingScore: boolean | null
   isStruggling: boolean
+  isCritical: boolean
+  recentAttempts: RecentAttempt[]
 }
 
 interface CprSessionScores {
@@ -86,6 +95,15 @@ export async function GET() {
           overallScore !== null ? overallScore >= scoreThreshold : null,
         isStruggling: failureCount >= THRESHOLD,
         isCritical: failureCount >= CRITICAL_THRESHOLD,
+        recentAttempts: session.attempts
+          .filter((a) => a.eventType === 'skills-activity-ended')
+          .slice(0, 10)
+          .map((a) => ({
+            activityId: a.activityId,
+            activityCompleted: a.activityCompleted,
+            timestamp: a.timestamp,
+            activityFailures: a.activityFailures,
+          })),
       }
     })
     .sort((a, b) => {

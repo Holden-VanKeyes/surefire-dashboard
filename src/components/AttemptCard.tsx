@@ -9,28 +9,26 @@ import {
   ActionIcon,
   Tooltip,
 } from '@mantine/core'
-import {
-  IconAlertTriangle,
-  IconClock,
-  IconMail,
-  IconSchool,
-} from '@tabler/icons-react'
+import { IconAlertTriangle, IconClock, IconMail } from '@tabler/icons-react'
 import { LearnerAttemptSummary } from '@/types/attempt'
-import {
-  formatRelativeTime,
-  getActivityLabel,
-  getDebriefingLabel,
-} from '@/lib/attempt-utils'
+import { formatRelativeTime, getActivityLabel } from '@/lib/attempt-utils'
 
 interface AttemptCardProps {
   attempt: LearnerAttemptSummary
+  onClick?: () => void
 }
 
-export function AttemptCard({ attempt }: AttemptCardProps) {
+export function AttemptCard({ attempt, onClick }: AttemptCardProps) {
   const isAtRisk = attempt.failureCount >= 3
 
   return (
-    <Card withBorder radius="md" p="lg">
+    <Card
+      withBorder
+      radius="md"
+      p="lg"
+      onClick={onClick}
+      className="cursor-pointer transition-shadow hover:shadow-lg"
+    >
       <Group justify="space-between" align="flex-start">
         <Stack gap={2}>
           <Group gap="xs">
@@ -90,7 +88,7 @@ export function AttemptCard({ attempt }: AttemptCardProps) {
           </Text>
         </Group>
       </Group>
-      <Group gap="xs" mt="sm">
+      <Group gap="xs" mt="sm" onClick={(event) => event.stopPropagation()}>
         <Tooltip label={`${attempt.userEmail}`} position="right" withArrow>
           <ActionIcon
             component="a"

@@ -7,6 +7,7 @@ import { DashboardHeader } from '@/components/DashboardHeader'
 import { StatsCards } from '@/components/StatsCards'
 import { FilterBar } from '@/components/FilterBar'
 import { AttemptCard } from '@/components/AttemptCard'
+import { LearnerDrawer } from '@/components/LearnerDrawer'
 
 const POLL_INTERVAL_MS = 30_000
 
@@ -21,6 +22,8 @@ export function Dashboard({ initialAttempts }: DashboardProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [filter, setFilter] = useState<'all' | 'struggling' | 'critical'>('all')
   const [search, setSearch] = useState('')
+  const [selectedAttempt, setSelectedAttempt] = useState<LearnerAttemptSummary | null>(null)
+  const [drawerOpened, setDrawerOpened] = useState(false)
 
   const fetchAttempts = useCallback(async () => {
     setIsRefreshing(true)
@@ -79,10 +82,23 @@ export function Dashboard({ initialAttempts }: DashboardProps) {
           </Center>
         ) : (
           filteredAttempts.map((attempt) => (
-            <AttemptCard key={attempt.id} attempt={attempt} />
+            <AttemptCard
+              key={attempt.id}
+              attempt={attempt}
+              onClick={() => {
+                setSelectedAttempt(attempt)
+                setDrawerOpened(true)
+              }}
+            />
           ))
         )}
       </SimpleGrid>
+
+      <LearnerDrawer
+        attempt={selectedAttempt}
+        opened={drawerOpened}
+        onClose={() => setDrawerOpened(false)}
+      />
     </>
   )
 }
