@@ -3,6 +3,8 @@ import { GET } from '@/app/api/attempts/route'
 import { Dashboard } from '@/components/Dashboard'
 import { LearnerAttemptSummary } from '@/types/attempt'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const res = await GET()
   const { attempts } = (await res.json()) as {
