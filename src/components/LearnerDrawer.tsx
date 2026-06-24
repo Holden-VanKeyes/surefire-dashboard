@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  Anchor,
   Badge,
   Button,
   Divider,
@@ -72,13 +71,6 @@ export function LearnerDrawer({
       }
     >
       <Stack gap="lg">
-        {/* <Group gap={6}>
-          <IconMail size={14} />
-          <Anchor size="sm" href={`mailto:${attempt.userEmail}`}>
-            {attempt.userEmail}
-          </Anchor>
-        </Group> */}
-
         <Stack gap={4}>
           <Text size="sm" fw={600}>
             CPR Score

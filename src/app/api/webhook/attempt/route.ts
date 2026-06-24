@@ -83,9 +83,6 @@ export async function POST(request: Request) {
   }
 
   const { data, stationId, eventType, timestamp } = body
-  console.log(
-    `Received webhook: ${eventType} for user ${data.user_id} at station ${stationId}`,
-  )
   const debriefings =
     data.activity_result?.Debriefings?.map((d) => d.text) ?? []
   const sessionOutcome =

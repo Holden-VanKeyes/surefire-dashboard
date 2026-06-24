@@ -4,46 +4,99 @@
 
 ## Project Purpose
 
-Internal dashboard for SureFire CPR customer service agents to monitor live CPR certification test sessions. Agents need visibility into participant failures and struggles in real time so they can proactively handle calls and interventions.
+Internal dashboard for SureFire CPR customer service agents to monitor live CPR
+certification skills lab sessions in real time. Agents get visibility into
+struggling learners before they call in frustrated — enabling proactive outreach
+instead of reactive damage control.
 
 ## Stack
 
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Mantine UI components
-- Prisma ORM
-- PostgreSQL (Railway)
+- Next.js 16 (App Router)
+- TypeScript (strict mode)
+- Tailwind CSS + Mantine UI
+- Prisma ORM v6 + PostgreSQL (Railway)
 - Slack Incoming Webhooks
 
 ## Architecture
 
-- Webhook receiver at POST /api/webhook/attempt — receives payload from Splashtop via SureFire's existing integration
-- Prisma upserts incoming data into Postgres
-- Dashboard polls GET /api/attempts every 30 seconds
-- Slack alert fires when failure threshold is reached (3+ failures or critical flag)
+### Data Flow
 
-## Data Shape (assumed — to be confirmed day-of)
+Laerdal Fleet Management → POST /api/webhook/attempt → Postgres → Dashboard
 
-Attempt object:
+- Webhook receiver at `POST /api/webhook/attempt`
+- Receives `skills-activity-started` and `skills-activity-ended` events
+- HMAC-SHA256 signature verification via `X-Fleet-Signature-256` header
+- Upserts `LearnerSession` and creates `ActivityAttempt` per event
+- Full raw payload stored in `rawPayload` Json field for future use
+- Dashboard polls `GET /api/attempts` every 60 seconds
+- Slack alert fires when critical threshold is reached
 
-- userId / participantName
-- contactEmail / contactPhone
-- locationId / locationName
-- currentStage (e.g. adult_chest, infant_breathing)
-- startedAt timestamp
-- failureCount
-- failureReasons (array of strings)
-- criticality (low / medium / high / critical)
-- status (in_progress / passed / failed / abandoned)
+### Key Design Decisions
+
+- `LearnerSession` is unique on `(userId, stationId, courseId)` — one session
+  per learner per station per course
+- `requestId` is unique on `ActivityAttempt` for idempotency — duplicate
+  webhook deliveries are safely ignored
+- `rawPayload` stores the full Fleet Management payload — avoids data loss
+  from schema assumptions, queryable later without migration
+- Failure counting uses only `skills-activity-ended` events with
+  `activityCompleted === false` — started events are excluded to avoid
+  double-counting
+- Two-tier alert system: Struggling (STRUGGLE_THRESHOLD) and Critical
+  (CRITICAL_THRESHOLD) — configurable via env vars
+
+## Data Model
+
+### LearnerSession
+
+One record per learner per station per course. Upserted on each webhook event.
+
+### ActivityAttempt
+
+One record per webhook event. Links back to LearnerSession via sessionId.
+Both started and ended events are stored — ended events contain rich scoring
+data in rawPayload.
+
+## Environment Variables
+
+DATABASE_URL= # Internal Railway Postgres URL
+DATABASE_PUBLIC_URL= # Public URL for local development
+FLEET_WEBHOOK_SECRET= # HMAC signing secret from Fleet Management
+SLACK_WEBHOOK_URL= # Slack incoming webhook URL
 
 ## Conventions
 
-- All mock data lives in /src/lib/mock-data.ts
-- API routes in /src/app/api/
-- Components in /src/components/
-- Lib/utils in /src/lib/
-- Use Mantine for all UI components
-- Use Tabler icons
-- TypeScript strict mode — no any types
-- All data fetching uses mock data until explicitly told otherwise
+- API routes in `/src/app/api/`
+- Components in `/src/components/`
+- Lib/utils in `/src/lib/`
+- Types in `/src/types/`
+- Mantine for all UI components
+- Tabler icons
+- No `any` types — use proper interfaces
+- Mock data in `/src/lib/mock-data.ts` (retained for local dev without webhook)
+
+## Key Files
+
+- `src/app/api/webhook/attempt/route.ts` — webhook receiver, HMAC verification,
+  DB upsert, Slack trigger
+- `src/app/api/attempts/route.ts` — dashboard data query, aggregation logic
+- `src/lib/fleet-signature.ts` — HMAC-SHA256 verification
+- `src/lib/slack.ts` — Slack alert formatting and delivery
+- `src/lib/prisma.ts` — Prisma client singleton
+- `src/components/Dashboard.tsx` — main dashboard, filter/search state
+- `src/components/AttemptCard.tsx` — learner card with email action
+- `src/components/LearnerDrawer.tsx` — detail drawer with score, history,
+  debriefings
+- `prisma/schema.prisma` — LearnerSession + ActivityAttempt models
+
+## What I'd Build Next
+
+- Configurable threshold UI — CS managers adjust struggle/critical thresholds
+  without touching env vars
+- Slack/email notification on critical threshold — proactive alert before
+  the call comes in
+- Enrich contact info — join on SureFire's user DB by user_id to surface
+  phone numbers
+- Regional filtering — CS agents scoped to their location group
+- Session timeout detection — flag learners who started but never finished
+- Phone number in payload — request Laerdal add to webhook

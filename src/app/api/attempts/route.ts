@@ -112,6 +112,5 @@ export async function GET() {
       if (!a.isCritical && b.isCritical) return 1
       return b.failureCount - a.failureCount
     })
-  // console.log('Returning attempts:', attempts)
   return NextResponse.json({ attempts })
 }

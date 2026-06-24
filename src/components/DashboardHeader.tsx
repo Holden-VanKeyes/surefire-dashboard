@@ -1,17 +1,26 @@
-"use client";
+'use client'
 
-import { ActionIcon, Badge, Group, Text, Title, Tooltip } from "@mantine/core";
-import { IconRefresh } from "@tabler/icons-react";
+import { ActionIcon, Badge, Group, Text, Title, Tooltip } from '@mantine/core'
+import { IconRefresh } from '@tabler/icons-react'
 
 interface DashboardHeaderProps {
-  lastUpdated: Date | null;
-  isRefreshing: boolean;
-  onRefresh: () => void;
+  lastUpdated: Date | null
+  isRefreshing: boolean
+  onRefresh: () => void
 }
 
-export function DashboardHeader({ lastUpdated, isRefreshing, onRefresh }: DashboardHeaderProps) {
+export function DashboardHeader({
+  lastUpdated,
+  isRefreshing,
+  onRefresh,
+}: DashboardHeaderProps) {
   return (
-    <Group justify="space-between" px="lg" py="md" className="border-b border-[var(--mantine-color-default-border)]">
+    <Group
+      justify="space-between"
+      px="lg"
+      py="md"
+      className="border-b border-[var(--mantine-color-default-border)]"
+    >
       <Group gap="xs">
         <Title order={3}>SureFire CPR</Title>
         <Badge variant="light" size="lg">
@@ -20,8 +29,10 @@ export function DashboardHeader({ lastUpdated, isRefreshing, onRefresh }: Dashbo
       </Group>
 
       <Group gap="sm">
-        <Text size="sm" c="dimmed">
-          {lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : "Loading..."}
+        <Text size="sm" c="dimmed" suppressHydrationWarning>
+          {lastUpdated
+            ? `Last updated ${lastUpdated.toLocaleTimeString()}`
+            : 'Loading...'}
         </Text>
         <Tooltip label="Refresh now">
           <ActionIcon
@@ -36,5 +47,5 @@ export function DashboardHeader({ lastUpdated, isRefreshing, onRefresh }: Dashbo
         </Tooltip>
       </Group>
     </Group>
-  );
+  )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Group, Switch, TextInput, SegmentedControl } from '@mantine/core'
+import { Group, TextInput, SegmentedControl } from '@mantine/core'
 import { IconSearch } from '@tabler/icons-react'
 
 interface FilterBarProps {

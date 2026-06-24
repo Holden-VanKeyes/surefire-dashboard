@@ -7,7 +7,7 @@ Internal dashboard for SureFire CPR customer service agents to monitor live CPR 
 - [Next.js 16](https://nextjs.org) (App Router) + TypeScript (strict mode)
 - [Mantine](https://mantine.dev) UI + [Tabler Icons](https://tabler.io/icons)
 - Tailwind CSS (utility classes only, alongside Mantine)
-- [Prisma](https://www.prisma.io) ORM with the `@prisma/adapter-pg` driver adapter
+- [Prisma](https://www.prisma.io) ORM
 - PostgreSQL (hosted on Railway)
 - Slack Incoming Webhooks
 
@@ -61,13 +61,13 @@ See [`prisma/schema.prisma`](prisma/schema.prisma) for the full schema.
 
 Create a `.env` file in the project root:
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `DATABASE_URL` | Yes | Postgres connection string (used by Prisma) |
-| `FLEET_WEBHOOK_SECRET` | Yes, for the webhook | Base64-encoded HMAC signing secret shared with Fleet Management |
-| `SLACK_WEBHOOK_URL` | Optional | Slack Incoming Webhook URL; alerts are skipped (logged, not thrown) if unset |
-| `STRUGGLE_THRESHOLD` | No (default `5`) | Failure count at which a learner is flagged as struggling |
-| `CRITICAL_THRESHOLD` | No (default `10`) | Failure count at which a learner is flagged as critical |
+| Variable               | Required             | Description                                                                  |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------------- |
+| `DATABASE_URL`         | Yes                  | Postgres connection string (used by Prisma)                                  |
+| `FLEET_WEBHOOK_SECRET` | Yes, for the webhook | Base64-encoded HMAC signing secret shared with Fleet Management              |
+| `SLACK_WEBHOOK_URL`    | Optional             | Slack Incoming Webhook URL; alerts are skipped (logged, not thrown) if unset |
+| `STRUGGLE_THRESHOLD`   | No (default `5`)     | Failure count at which a learner is flagged as struggling                    |
+| `CRITICAL_THRESHOLD`   | No (default `10`)    | Failure count at which a learner is flagged as critical                      |
 
 ## Getting started
 
